@@ -1,4 +1,5 @@
 /*global setInterval*/
+/*global setInterval*/
 /* demo.js is loaded by both index.ios.js and index.android.js */
 
 import { random, range } from "lodash";
