@@ -31,6 +31,8 @@ import {
   VictoryPie,
   createContainer
 } from "victory-native";
+import axios from 'axios';
+var _ = require('lodash');
 
 const styles = StyleSheet.create({
   container: {
@@ -80,9 +82,12 @@ export default class App extends Component {
       transitionData: this.getTransitionData(),
       randomData: this.generateRandomData(),
       staticRandomData: this.generateRandomData(15),
-      data: this.getData()
+      data: this.getData(),
+      graph: []
     };
+    this.callAPI();
   }
+
   getYFunction() {
     const n = random(2, 7);
     return (data) => Math.exp(-n * data.x) * Math.sin(2 * n * Math.PI * data.x);
@@ -94,6 +99,57 @@ export default class App extends Component {
 
   getData() {
     return range(1, 10).map((i) => ({x: i, y: random(1, 10)}));
+  }
+
+  callAPI() {
+      let config = {
+          // headers: {
+          //   Authorization: 'Basic cGVhaGl2ZToyOFNlcDE5NjA=',
+          // },
+          // adapter: cancelXhrAdapter,
+          // cancellation: this.cancellation,
+      };
+      axios.get('https://api.solcast.com.au/radiation/forecasts?longitude=149.117&latitude=-35.277&format=json&api_key=plyNKxCJARwFg28hSfe4sd6zu8lGkDyr', config).then((data) => {
+          console.log(this.generateRandomData());
+          console.log(data);
+          console.log(data.data.forecasts);
+          var x = data.data.forecasts;
+          var new_forecast = [];
+          var slice_forecast= [];
+          var slice_data = [];
+          var new_data = [];
+          var i = 0;
+          var new_item;
+          x.forEach(function(item){
+              i = i+1;
+              console.log(i);
+              item.period_end = new Date(item.period_end);
+              item.value = item.air_temp;
+              item.time = item.period_end;
+              new_forecast.push(item);
+
+              new_item = {x: i, y: item.air_temp};
+              new_data.push(new_item)
+              // }
+          }); //forEach
+          console.log('new_forecast');
+          console.log(new_forecast);
+
+          console.log('new_data');
+          console.log(new_data);
+
+          // range(1, points + 1).map((i) => ({x: i, y: i + random(-1, 2)}));
+
+          slice_forecast = _.slice(new_forecast, [start=0], [end=40]);
+          slice_data = _.slice(new_data, [start=0], [end=300]);
+          this.setState({
+              staticRandomData:  slice_data,
+          });
+          console.log('slice_data');
+          console.log(slice_data)
+      }, (error) => {
+          console.log('error ' + error);
+      });
   }
 
   getStyles() {
